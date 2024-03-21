@@ -27,3 +27,7 @@ class UserDeleted extends UsersEvent {
 
   const UserDeleted({required this.id});
 }
+
+class UsersRefreshed extends UsersEvent {
+  const UsersRefreshed();
+}

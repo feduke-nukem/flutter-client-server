@@ -20,6 +20,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
           UserAdded() => _onAdded(event, emit),
           UserUpdated() => _onUpdated(event, emit),
           UserDeleted() => _onDeleted(event, emit),
+          UsersRefreshed() => _onRefreshed(emit),
         };
       },
       transformer: (events, mapper) => events.asyncExpand(mapper),
@@ -35,15 +36,38 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
       emit(
         UsersIdle(
           users: users,
-          processingUsers: const [],
+          processingUsers: state.processingUsers,
         ),
       );
     } catch (e) {
       emit(
         UsersError(
           error: e,
-          users: const [],
-          processingUsers: const [],
+          users: state.users,
+          processingUsers: state.processingUsers,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onRefreshed(Emitter<UsersState> emit) async {
+    if (state is UsersLoading) return;
+
+    try {
+      final users = await _userService.getAll();
+
+      emit(
+        UsersIdle(
+          users: users,
+          processingUsers: state.processingUsers,
+        ),
+      );
+    } catch (e) {
+      emit(
+        UsersError(
+          error: e,
+          users: state.users,
+          processingUsers: state.processingUsers,
         ),
       );
     }

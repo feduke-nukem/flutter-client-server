@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 void main() {
+  Bloc.observer = _BlocObserver();
   runApp(
     BlocProvider(
       create: (context) => UsersBloc(UserService())..add(const UsersStarted()),
@@ -76,71 +77,81 @@ class _MyHomePageState extends State<MyHomePage> {
                 const CircularProgressIndicator(),
               UsersError(users: []) => const Text('Error'),
               UsersIdle(users: []) => const Text('Empty'),
-              UsersIdle() || UsersError() => ListView.builder(
-                  itemCount: state.users.length,
-                  itemBuilder: (context, index) {
-                    final user = state.users.elementAt(index);
+              UsersIdle() || UsersError() => RefreshIndicator(
+                  onRefresh: () {
+                    final bloc = context.read<UsersBloc>()
+                      ..add(const UsersRefreshed());
 
-                    final isProcessing = state.processingUsers.contains(user);
-
-                    final card = Card(
-                      clipBehavior: Clip.hardEdge,
-                      child: ListTile(
-                        onTap: () async {
-                          final usersBloc = context.read<UsersBloc>();
-                          var name = user.name;
-                          await showDialog<String>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Change user'),
-                              content: TextFormField(
-                                validator: (value) => value?.isEmpty ?? false
-                                    ? 'Name is required'
-                                    : null,
-                                autovalidateMode: AutovalidateMode.always,
-                                onChanged: (value) => name = value,
-                                initialValue: name,
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Confirm'),
-                                )
-                              ],
-                            ),
-                          );
-
-                          usersBloc.add(UserUpdated(id: user.id, name: name));
-                        },
-                        trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => context
-                                .read<UsersBloc>()
-                                .add(UserDeleted(id: user.id))),
-                        title: Text(
-                          user.name,
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        subtitle: Text(user.id.toString()),
-                      ),
-                    );
-
-                    return IgnorePointer(
-                      ignoring: isProcessing,
-                      child: isProcessing
-                          ? Shimmer.fromColors(
-                              enabled: true,
-                              baseColor: Colors.grey.shade300,
-                              highlightColor: Colors.grey.shade100,
-                              child: card,
-                            )
-                          : card,
-                    );
+                    return bloc.stream.first;
                   },
+                  child: ListView.builder(
+                    itemCount: state.users.length,
+                    itemBuilder: (context, index) {
+                      final user = state.users.elementAt(index);
+
+                      final isProcessing = state.processingUsers.contains(user);
+
+                      final card = Card(
+                        clipBehavior: Clip.hardEdge,
+                        child: ListTile(
+                          onTap: () async {
+                            final usersBloc = context.read<UsersBloc>();
+                            var name = user.name;
+                            await showDialog<String>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Change user'),
+                                content: TextFormField(
+                                  validator: (value) => value?.isEmpty ?? false
+                                      ? 'Name is required'
+                                      : null,
+                                  autovalidateMode: AutovalidateMode.always,
+                                  onChanged: (value) => name = value,
+                                  initialValue: name,
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Confirm'),
+                                  )
+                                ],
+                              ),
+                            );
+
+                            usersBloc.add(UserUpdated(id: user.id, name: name));
+                          },
+                          trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => context
+                                  .read<UsersBloc>()
+                                  .add(UserDeleted(id: user.id))),
+                          title: Text(
+                            user.name,
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          subtitle: Text(user.id.toString()),
+                        ),
+                      );
+
+                      return IgnorePointer(
+                        ignoring: isProcessing,
+                        child: isProcessing
+                            ? Shimmer.fromColors(
+                                enabled: true,
+                                baseColor: Colors.grey.shade300,
+                                highlightColor: Colors.grey.shade100,
+                                child: card,
+                              )
+                            : card,
+                      );
+                    },
+                  ),
                 ),
             },
           ),
@@ -185,4 +196,30 @@ class _MyHomePageState extends State<MyHomePage> {
     ..showSnackBar(
       SnackBar(content: Text(text)),
     );
+}
+
+class _BlocObserver extends BlocObserver {
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    print(transition);
+  }
+
+  @override
+  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+    super.onError(bloc, error, stackTrace);
+    print(error);
+  }
+
+  @override
+  void onChange(BlocBase bloc, Change change) {
+    super.onChange(bloc, change);
+    print(change);
+  }
+
+  @override
+  void onEvent(Bloc bloc, Object? event) {
+    super.onEvent(bloc, event);
+    print(event);
+  }
 }
