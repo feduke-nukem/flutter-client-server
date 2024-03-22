@@ -4,13 +4,13 @@ import 'package:bloc/bloc.dart';
 import 'package:client/src/service/user_service.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared/shared.dart';
 
 part 'users_event.dart';
 part 'users_state.dart';
 
 class UsersBloc extends Bloc<UsersEvent, UsersState> {
   final UserService _userService;
+  late final StreamSubscription<Iterable<User>> _subscription;
 
   UsersBloc(this._userService) : super(const UsersInitial()) {
     on<UsersEvent>(
@@ -21,10 +21,15 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
           UserUpdated() => _onUpdated(event, emit),
           UserDeleted() => _onDeleted(event, emit),
           UsersRefreshed() => _onRefreshed(emit),
+          _UsersChanged() => emit(state.copyWith(users: event.users)),
         };
       },
       transformer: (events, mapper) => events.asyncExpand(mapper),
     );
+
+    _subscription = _userService.watch().listen(
+          (users) => add(_UsersChanged(users: users)),
+        );
   }
 
   Future<void> _onStarted(Emitter<UsersState> emit) async {
@@ -86,11 +91,11 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     );
 
     try {
-      final user = await _userService.create(event.name);
+      await _userService.create(event.name);
 
       emit(
         UsersIdle(
-          users: [...state.users, user],
+          users: state.users,
           processingUsers: state.processingUsers,
         ),
       );
@@ -123,7 +128,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
       await _userService.delete(event.id);
       emit(
         UsersIdle(
-          users: state.users.where((u) => u.id != event.id).toList(),
+          users: state.users,
           processingUsers:
               state.processingUsers.where((u) => u.id != event.id).toList(),
         ),
@@ -159,13 +164,11 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     );
 
     try {
-      final updatedUser = await _userService.update(event.id, event.name);
+      await _userService.update(event.id, event.name);
 
       emit(
         UsersIdle(
-          users: state.users
-              .map((u) => u.id == event.id ? updatedUser : u)
-              .toList(),
+          users: state.users,
           processingUsers:
               state.processingUsers.where((u) => u.id != event.id).toList(),
         ),
@@ -180,5 +183,11 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
         ),
       );
     }
+  }
+
+  @override
+  Future<void> close() {
+    _subscription.cancel();
+    return super.close();
   }
 }

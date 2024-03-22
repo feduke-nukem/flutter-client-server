@@ -1,0 +1,34 @@
+syntax = "proto3";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+// https://protobuf.dev/reference/protobuf/google.protobuf/
+// https://github.com/google/protobuf.dart/issues/483#issuecomment-857238021
+message User {
+  int32 id = 1;
+  string name = 2;
+}
+
+message OptionalUser {
+  oneof kind {
+    User user = 1;
+    google.protobuf.NullValue null_user = 2;
+  }
+}
+
+message UserUpdateRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+message Users { repeated User users = 1; }
+
+service UserService {
+  rpc Get(google.protobuf.Int32Value) returns (OptionalUser);
+  rpc Create(google.protobuf.StringValue) returns (User);
+  rpc Delete(google.protobuf.Int32Value) returns (google.protobuf.Empty);
+  rpc Update(UserUpdateRequest) returns (User);
+  rpc GetAll(google.protobuf.Empty) returns (Users);
+  rpc WatchUsers(google.protobuf.Empty) returns (stream Users);
+}

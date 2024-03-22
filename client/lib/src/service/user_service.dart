@@ -1,65 +1,51 @@
-import 'dart:convert';
+import 'package:shared/shared.dart' as shared;
 
-import 'package:shared/shared.dart';
-import 'package:http/http.dart' as http;
+class User {
+  final int id;
+  final String name;
 
-const _baseUrl = 'http://localhost:8080/user';
+  const User({required this.id, required this.name});
+}
 
 class UserService {
-  Future<User> get(int id) async {
-    final response = await http.get(Uri.parse('$_baseUrl/$id'));
+  final shared.UserServiceClient _client;
 
-    if (response.statusCode > 299 || response.statusCode < 100) {
-      throw Exception(response);
-    }
+  UserService(this._client);
 
-    return User.fromJson(jsonDecode(response.body));
+  Future<User?> get(int id) async {
+    final response = await _client.get(shared.Int32Value(value: id));
+
+    if (!response.hasUser()) return null;
+
+    return User(
+      id: response.user.id,
+      name: response.user.name,
+    );
   }
 
   Future<List<User>> getAll() async {
-    final response = await http.get(Uri.parse(_baseUrl));
+    final response = await _client.getAll(shared.Empty());
 
-    if (response.statusCode > 299 || response.statusCode < 100) {
-      throw Exception(response);
-    }
-
-    if (response.body.isEmpty) return const [];
-
-    return (jsonDecode(response.body) as List)
-        .map((e) => User.fromJson(e))
-        .toList();
+    return (response.users).map((e) => User(id: e.id, name: e.name)).toList();
   }
 
   Future<User> create(String name) async {
-    final response = await http.post(
-      Uri.parse(_baseUrl),
-      body: name,
-    );
+    final response = await _client.create(shared.StringValue(value: name));
 
-    if (response.statusCode > 299 || response.statusCode < 100) {
-      throw Exception(response);
-    }
-
-    return User.fromJson(jsonDecode(response.body));
+    return User(id: response.id, name: response.name);
   }
 
   Future<User> update(int id, String name) async {
-    final response = await http.patch(
-      Uri.parse('$_baseUrl/$id?name=$name'),
+    final response = await _client.update(
+      shared.UserUpdateRequest(id: id, name: name),
     );
 
-    if (response.statusCode > 299 || response.statusCode < 100) {
-      throw Exception(response);
-    }
-
-    return User.fromJson(jsonDecode(response.body));
+    return User(id: response.id, name: response.name);
   }
 
-  Future<void> delete(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/$id'));
+  Future<void> delete(int id) => _client.delete(shared.Int32Value(value: id));
 
-    if (response.statusCode > 299 || response.statusCode < 100) {
-      throw Exception(response);
-    }
-  }
+  Stream<Iterable<User>> watch() => _client
+      .watchUsers(shared.Empty())
+      .map((event) => event.users.map((e) => User(id: e.id, name: e.name)));
 }

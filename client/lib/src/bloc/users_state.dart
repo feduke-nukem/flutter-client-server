@@ -7,6 +7,27 @@ sealed class UsersState {
   Iterable<User> get users;
 
   Iterable<User> get processingUsers;
+
+  UsersState copyWith({
+    Iterable<User>? users,
+    Iterable<User>? processingUsers,
+  }) =>
+      switch (this) {
+        UsersInitial() => const UsersInitial(),
+        UsersLoading() => UsersLoading(
+            users: users ?? this.users,
+            processingUsers: processingUsers ?? this.processingUsers,
+          ),
+        UsersIdle() => UsersIdle(
+            users: users ?? this.users,
+            processingUsers: processingUsers ?? this.users,
+          ),
+        UsersError(:final error) => UsersError(
+            error: error,
+            users: users ?? this.users,
+            processingUsers: processingUsers ?? this.processingUsers,
+          ),
+      };
 }
 
 final class UsersInitial extends UsersState {

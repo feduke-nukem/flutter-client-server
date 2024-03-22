@@ -31,3 +31,9 @@ class UserDeleted extends UsersEvent {
 class UsersRefreshed extends UsersEvent {
   const UsersRefreshed();
 }
+
+class _UsersChanged extends UsersEvent {
+  final Iterable<User> users;
+
+  const _UsersChanged({required this.users});
+}

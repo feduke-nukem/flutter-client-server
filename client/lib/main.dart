@@ -2,13 +2,24 @@ import 'package:client/src/bloc/users_bloc.dart';
 import 'package:client/src/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
+import 'package:shared/shared.dart';
 import 'package:shimmer/shimmer.dart';
 
 void main() {
   Bloc.observer = _BlocObserver();
+  final channel = ClientChannel(
+    'localhost',
+    port: 8080,
+    options: const ChannelOptions(
+      credentials: ChannelCredentials.insecure(),
+    ),
+  );
+  final client = UserServiceClient(channel);
   runApp(
     BlocProvider(
-      create: (context) => UsersBloc(UserService())..add(const UsersStarted()),
+      create: (context) =>
+          UsersBloc(UserService(client))..add(const UsersStarted()),
       child: const MyApp(),
     ),
   );

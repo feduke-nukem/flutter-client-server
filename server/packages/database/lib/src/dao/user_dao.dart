@@ -28,4 +28,7 @@ class UserDao extends DatabaseAccessor<MyDatabase> with _$UserDaoMixin {
         .writeReturning(UsersCompanion.insert(name: name))
         .then((value) => value.first);
   }
+
+  Stream<Iterable<User>> get stream =>
+      attachedDatabase.users.select().watch().skip(1);
 }
