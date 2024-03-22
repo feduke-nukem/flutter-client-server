@@ -1,30 +1,31 @@
 import 'package:database/database.dart';
-import 'package:orm/orm.dart';
+import 'package:drift/drift.dart';
 
-class UserDao {
-  final PrismaClient _db;
+part 'user_dao.g.dart';
 
-  UserDao(this._db);
+@DriftAccessor(tables: [Users])
+class UserDao extends DatabaseAccessor<MyDatabase> with _$UserDaoMixin {
+  UserDao(super.attachedDatabase);
 
-  Future<User> create(String name) {
-    return _db.user.create(data: PrismaUnion.$1(UserCreateInput(name: name)));
+  Future<User> create(String name) async {
+    return attachedDatabase.users.insertReturning(
+      UsersCompanion.insert(name: name),
+    );
   }
 
   Future<User?> getById(int id) {
-    return _db.user.findFirst(where: UserWhereInput(id: PrismaUnion.$2(id)));
+    return (attachedDatabase.users.select()..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
   }
 
-  Future<Iterable<User>> getAll() => _db.user.findMany();
+  Future<Iterable<User>> getAll() => attachedDatabase.users.select().get();
 
   Future<void> deleteById(int id) =>
-      _db.user.delete(where: UserWhereUniqueInput(id: id));
+      attachedDatabase.users.deleteWhere((tbl) => tbl.id.equals(id));
 
-  Future<void> updateName(int id, String name) => _db.user.update(
-        where: UserWhereUniqueInput(id: id),
-        data: PrismaUnion.$1(
-          UserUpdateInput(
-            name: PrismaUnion.$1(name),
-          ),
-        ),
-      );
+  Future<User> updateName(int id, String name) {
+    return (update(attachedDatabase.users)..where((tbl) => tbl.id.equals(id)))
+        .writeReturning(UsersCompanion.insert(name: name))
+        .then((value) => value.first);
+  }
 }

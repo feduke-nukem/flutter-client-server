@@ -16,7 +16,7 @@ class User with _$User {
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   factory User.fromDb(db.User data) => User(
-        id: data.id!,
-        name: data.name!,
+        id: data.id,
+        name: data.name,
       );
 }

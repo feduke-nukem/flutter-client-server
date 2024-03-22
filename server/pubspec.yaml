@@ -12,8 +12,6 @@ dependencies:
   database:
     path: packages/database
   dart_frog: ^1.1.0
-  orm: ^4.0.1
-  ffi: ^2.1.0
 
 dev_dependencies:
   mocktail: 1.0.0
