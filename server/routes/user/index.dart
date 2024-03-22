@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:database/database.dart';
-import 'package:stormberry/stormberry.dart';
 import 'package:shared/shared.dart' as shared;
 
 Future<Response> onRequest(RequestContext context) async {
@@ -21,17 +20,11 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> _onPost(RequestContext context) async {
-  final db = context.read<Database>();
+  final dao = context.read<UserDao>();
 
   final name = await context.request.body();
 
-  final id = await db.users.insertOne(UserInsertRequest(name: name));
-
-  final user = await db.users.queryUser(id);
-
-  if (user == null) {
-    return Response(statusCode: HttpStatus.notFound);
-  }
+  final user = await dao.create(name);
 
   return Response.json(
     statusCode: HttpStatus.created,
@@ -40,9 +33,9 @@ Future<Response> _onPost(RequestContext context) async {
 }
 
 Future<Response> _onGet(RequestContext context) async {
-  final db = context.read<Database>();
+  final dao = context.read<UserDao>();
 
-  final result = await db.users.queryUsers();
+  final result = await dao.getAll();
 
   final users = result.map((e) => shared.User.fromDb(e)).toList();
 

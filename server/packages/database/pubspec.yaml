@@ -6,7 +6,8 @@ environment:
   sdk: ^3.2.3
 
 dependencies:
-  stormberry: ^0.14.0
+  ffi: ^2.1.0
+  orm: ^4.0.1
 
 dev_dependencies:
   lints: ^2.1.0

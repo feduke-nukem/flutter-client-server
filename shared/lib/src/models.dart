@@ -1,4 +1,4 @@
-import 'package:database/database.dart';
+import 'package:database/database.dart' as db;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.g.dart';
@@ -15,8 +15,8 @@ class User with _$User {
   /// @nodoc
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
-  factory User.fromDb(UserView data) => User(
-        id: data.id,
-        name: data.name,
+  factory User.fromDb(db.User data) => User(
+        id: data.id!,
+        name: data.name!,
       );
 }

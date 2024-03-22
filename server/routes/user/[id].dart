@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:database/database.dart';
-import 'package:stormberry/stormberry.dart';
 import 'package:shared/shared.dart' as shared;
 
 Future<Response> onRequest(
@@ -28,11 +27,11 @@ Future<Response> _onGet(
   RequestContext context,
   String id,
 ) async {
-  final db = context.read<Database>();
+  final dao = context.read<UserDao>();
 
   final userId = int.parse(id);
 
-  final user = await db.users.queryUser(userId);
+  final user = await dao.getById(userId);
 
   if (user == null) {
     return Response(
@@ -45,11 +44,11 @@ Future<Response> _onGet(
 }
 
 Future<Response> _onPatch(RequestContext context, String id) async {
-  final db = context.read<Database>();
+  final dao = context.read<UserDao>();
 
   final userId = int.parse(id);
 
-  final user = await db.users.queryUser(userId);
+  final user = await dao.getById(userId);
 
   if (user == null) {
     return Response(
@@ -64,7 +63,7 @@ Future<Response> _onPatch(RequestContext context, String id) async {
     return Response(statusCode: HttpStatus.badRequest);
   }
 
-  await db.users.updateOne(UserUpdateRequest(id: userId, name: name));
+  await dao.updateName(userId, name);
 
   return Response.json(
     body: shared.User.fromDb(user).copyWith(name: name),
@@ -75,11 +74,11 @@ Future<Response> _onDelete(
   RequestContext context,
   String id,
 ) async {
-  final db = context.read<Database>();
+  final dao = context.read<UserDao>();
 
   final userId = int.parse(id);
 
-  final result = await db.users.queryUser(userId);
+  final result = await dao.getById(userId);
 
   if (result == null) {
     return Response(
@@ -89,7 +88,7 @@ Future<Response> _onDelete(
   }
 
   try {
-    await db.users.deleteOne(userId);
+    await dao.deleteById(userId);
   } catch (e) {
     return Response(statusCode: HttpStatus.badRequest);
   }
