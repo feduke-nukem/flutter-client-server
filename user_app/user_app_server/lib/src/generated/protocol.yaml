@@ -1,0 +1,6 @@
+user:
+  - getAll:
+  - create:
+  - delete:
+  - get:
+  - patch:

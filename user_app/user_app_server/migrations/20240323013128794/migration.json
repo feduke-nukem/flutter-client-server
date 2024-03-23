@@ -1,0 +1,43 @@
+{
+  "actions": [
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "users",
+        "schema": "public",
+        "addColumns": [],
+        "deleteColumns": [
+          "lastName"
+        ],
+        "modifyColumns": [],
+        "addIndexes": [],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "columnDropped",
+            "message": "Column \"lastName\" of table \"users\" will be dropped.",
+            "table": "users",
+            "columns": [
+              "lastName"
+            ],
+            "destrucive": true
+          }
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "type": "columnDropped",
+      "message": "Column \"lastName\" of table \"users\" will be dropped.",
+      "table": "users",
+      "columns": [
+        "lastName"
+      ],
+      "destrucive": true
+    }
+  ],
+  "migrationApiVersion": 1
+}

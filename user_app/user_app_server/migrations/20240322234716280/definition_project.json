@@ -1,0 +1,15 @@
+{
+  "moduleName": "user_app",
+  "tables": [],
+  "installedModules": [
+    {
+      "module": "serverpod",
+      "version": "20240115074235544"
+    },
+    {
+      "module": "user_app",
+      "version": "20240322231433429"
+    }
+  ],
+  "migrationApiVersion": 1
+}

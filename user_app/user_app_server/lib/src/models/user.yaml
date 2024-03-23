@@ -1,0 +1,4 @@
+class: User
+table: users
+fields:
+  name: String

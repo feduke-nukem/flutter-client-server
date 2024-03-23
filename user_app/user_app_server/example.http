@@ -1,0 +1,43 @@
+POST  http://localhost:8080/example
+Content-Type: application/json
+
+{"name": "qssss","method": "hello"}
+
+###
+
+POST  http://localhost:8080/user
+Content-Type: application/json
+
+{"method": "getAll"}
+
+###
+
+POST  http://localhost:8080/user
+Content-Type: application/json
+
+{"method": "create", "name": "Anna"}
+
+###
+
+POST  http://localhost:8080/user
+Content-Type: application/json
+
+{"method": "get", "id": 1}
+
+###
+
+POST  http://localhost:8080/user
+Content-Type: application/json
+
+{"method": "delete", "id": 1}
+
+###
+
+POST  http://localhost:8080/user
+Content-Type: application/json
+
+{
+    "method": "patch",    
+    "id": 2,
+    "name": "Anna2"
+}
